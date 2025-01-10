@@ -1,12 +1,49 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { Step, StepComponent } from './ng-template-outlet/step/step.component';
+import { StepActionsComponent } from './ng-template-outlet/step/step-actions.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  template: `
+    <app-step
+      [steps]="steps()"
+      [headerTemplate]="header"
+      [bodyTemplate]="body"
+      [footerTemplate]="footer"
+    />
+
+    <ng-template #header>
+      <h2>Custom title</h2>
+    </ng-template>
+
+    <ng-template #body let-index let-step="step">
+      <span
+        >ID: {{ step.id }} - index :{{ index }} - text: {{ step.text }}</span
+      >
+    </ng-template>
+
+    <ng-template #footer>
+      <app-step-actions />
+    </ng-template>
+
+    <app-step [steps]="steps()" />
+  `,
+  imports: [StepComponent, StepActionsComponent],
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
-  title = 'angular-dynamic-components';
+  steps = signal<Step[]>([
+    {
+      id: 1,
+      text: 'Este es el primer step.',
+    },
+    {
+      id: 2,
+      text: 'Este es el segundo step.',
+    },
+    {
+      id: 3,
+      text: 'Este es el tercer step.',
+    },
+  ]);
 }
