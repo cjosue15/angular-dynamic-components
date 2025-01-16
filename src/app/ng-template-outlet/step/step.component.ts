@@ -1,4 +1,5 @@
-import { NgIf, NgTemplateOutlet } from '@angular/common';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   inject,
@@ -6,8 +7,6 @@ import {
   input,
   signal,
   TemplateRef,
-  viewChild,
-  ViewContainerRef,
 } from '@angular/core';
 
 export interface Step {
