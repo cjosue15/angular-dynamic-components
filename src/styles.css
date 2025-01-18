@@ -2,6 +2,7 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+  background-color: #dadada;
 }
 
 app-step {
@@ -16,14 +17,51 @@ app-step {
     margin-bottom: 16px;
     font-size: 24px;
   }
+}
 
-  button {
-    background-color: #111;
-    border: none;
-    color: white;
-    font-family: inherit;
-    border-radius: 8px;
-    padding: 8px 16px;
-    margin-right: 16px;
+button {
+  background-color: #111;
+  border: none;
+  color: white;
+  font-family: inherit;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-right: 16px;
+  cursor: pointer;
+
+  &.secondary {
+    background-color: white;
+    border: 1px solid #111;
+    color: #111;
+  }
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+app-card {
+  display: block;
+  padding: 20px;
+  border: 1px solid #111;
+  margin: 40px;
+  border-radius: 8px;
+  background-color: white;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 20px;
+  }
+
+  p {
+    margin-bottom: 0;
+  }
+
+  .title {
+    display: flex;
+    justify-content: space-between;
   }
 }
