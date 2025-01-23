@@ -1,65 +1,91 @@
+import { NgComponentOutlet } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import {
   Component,
-  ComponentRef,
   inject,
   TemplateRef,
+  Type,
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { CardComponent } from './dynamic-components/components/card.component';
+import { ComponentA } from './ng-component-outlet/components/component-a';
+import { ComponentB } from './ng-component-outlet/components/component-b';
+import { ComponentC } from './ng-component-outlet/components/component-c';
+
+interface DynamicComponent {
+  id: string;
+  inputs: Record<string, unknown>;
+  content: string;
+}
 
 @Component({
   selector: 'app-root',
   template: `
-    <header>
-      <button (click)="createComponent()">Create component</button>
-      <button (click)="removeComponent()" class="secondary">
-        Remove component
-      </button>
-    </header>
-
     <main>
-      <!-- <app-card /> -->
+      @for (component of components(); track component) {
+        <ng-container
+          [ngComponentOutlet]="component.id"
+          [ngComponentOutletInputs]="component.inputs"
+          [ngComponentOutletContent]="getNodes(component.content)"
+        />
+      }
 
-      <!-- <app-card>  </app-card> -->
-      <ng-container #container />
+      <ng-template #template1>
+        <p>Hi i'm the template 1</p>
+      </ng-template>
 
-      <ng-template #content>
-        <p>Hi i'm the content</p>
+      <ng-template #template2>
+        <p>Hi i'm the template 2</p>
       </ng-template>
     </main>
   `,
   styleUrl: './app.component.css',
-  imports: [CardComponent],
+  imports: [NgComponentOutlet],
 })
 export class AppComponent {
-  ref = inject(ViewContainerRef);
+  viewContainerRef = inject(ViewContainerRef);
 
-  container = viewChild.required('container', { read: ViewContainerRef });
+  template1 = viewChild.required<TemplateRef<unknown>>('template1');
+  template2 = viewChild.required<TemplateRef<unknown>>('template2');
 
-  content = viewChild.required<TemplateRef<unknown>>('content');
+  private http = inject(HttpClient);
 
-  componentRef!: ComponentRef<CardComponent>;
+  componentsMap: Record<string, Type<unknown>> = {
+    ComponentA: ComponentA,
+    ComponentB: ComponentB,
+    ComponentC: ComponentC,
+  };
 
-  createComponent() {
-    const template = this.container().createEmbeddedView(this.content());
+  components = toSignal(
+    this.http.get<DynamicComponent[]>('./components.json').pipe(
+      map((components) =>
+        components.map((c) => {
+          return {
+            ...c,
+            id: this.componentsMap[c.id] ?? CardComponent,
+          };
+        }),
+      ),
+    ),
+  );
 
-    this.componentRef = this.container().createComponent(CardComponent, {
-      projectableNodes: [template.rootNodes],
-    });
+  getNodes(content: string) {
+    if (!content) return [];
 
-    this.componentRef.setInput('title', 'New title');
+    const templates: Record<string, TemplateRef<unknown> | undefined> = {
+      'template-1': this.template1(),
+      'template-2': this.template2(),
+    };
 
-    this.componentRef.instance.remove.subscribe(() => {
-      this.componentRef.destroy();
-    });
+    const template = this.viewContainerRef.createEmbeddedView(
+      templates[content]!,
+    );
 
-    // setTimeout(() => {
-    //   this.componentRef.destroy();
-    // }, 2000);
-  }
+    template.destroy();
 
-  removeComponent() {
-    this.container().remove(1);
+    return [template.rootNodes];
   }
 }
